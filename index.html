@@ -19,7 +19,16 @@
                 </div>
             </div>
 
+            <div class="container mt-3">
+                <div v-for="(column, i) in field" :key="'column-' + i">
+                    <div v-for="(line, j) in column" :key="'line-' + j" class="cell border">
+                        
+                    </div>
+                </div>
+            </div>
+
         </div>
+
         <script>
             var app = new Vue({
                 el: '#app',
@@ -28,7 +37,11 @@
                     player: {
                         uuid: '',
                         name: ''
-                    }
+                    },
+                    fieldSize: 32,
+                    field: []
+                    // players: [],
+                    // playerIndex: 0
                 },
 
                 mounted() {
@@ -39,6 +52,14 @@
                         this.player.uuid = this.getUUID();
                         this.savePlayer();
                     }
+
+                    // this.playerIndex = this.players.findIndex(p => p.uuid === this.uuid);
+
+                    // if (this.playerIndex === -1) {
+                    //     this.playerIndex = this.players.length;
+                    // }
+
+                    this.createField();
                 },
 
                 methods: {
@@ -60,9 +81,28 @@
                         if (player) {
                             this.player = JSON.parse(player);
                         }
+                    },
+
+                    createField() {
+                        for (let i = 0; i < this.fieldSize; i++) {
+                            this.field.push(new Array(this.fieldSize));
+                        }
+
+                        console.log(this.field);
                     }
                 }
             });
         </script>
+
+    <style>
+        .container {
+            display: flex;
+        }
+
+        .cell {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
     </body>
 </html>
