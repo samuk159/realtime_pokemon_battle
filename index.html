@@ -1,0 +1,68 @@
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Batalha Pokemon</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    </head>
+    <body>
+        <div id="app">
+
+            <div class="row mx-0">
+                <div class="col">
+                    <h6>UUID:</h6>
+                    <h6>{{player.uuid}}</h6>
+                </div>
+                <div class="col">
+                    <label>Nome:</label>
+                    <input type="text" class="form-control" v-model="player.name" @input="savePlayer()">
+                </div>
+            </div>
+
+        </div>
+        <script>
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    //Atributos do componente
+                    player: {
+                        uuid: '',
+                        name: ''
+                    }
+                },
+
+                mounted() {
+                    //Inicialização do componente
+                    this.loadPlayer();
+
+                    if (!this.player.uuid) {
+                        this.player.uuid = this.getUUID();
+                        this.savePlayer();
+                    }
+                },
+
+                methods: {
+                    //Métodos
+                    getUUID() {
+                        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+                    },
+
+                    savePlayer() {
+                        localStorage.setItem('player', JSON.stringify(this.player));
+                    },
+
+                    loadPlayer() {
+                        let player = localStorage.getItem('player');
+
+                        if (player) {
+                            this.player = JSON.parse(player);
+                        }
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
