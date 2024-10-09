@@ -46,15 +46,17 @@
 
                     <h1 v-if="player.dead">Você morreu!</h1>
                     
-                    <div class="row">
+                    <div v-if="player.dead" class="row justify-content-start">
                         <div 
                             v-for="(pokemon, i) in pokemons" :key="'pokemon-' + i" 
-                            class="col px-0"
+                            class="col-auto px-0"
                         >
                             <button 
                                 type="button" 
+                                class="btn btn-outline-secondary"
                                 :disabled="!player.dead"
                                 @click="choosePokemon(i)"
+                                style="width: 64px; height: 64px"
                             >
                                 <img :src="pokemon.image" style="width: 100%">
                             </button>
