@@ -19,18 +19,45 @@
                 </div>
             </div>
 
-            <div class="field m-3">
-                <div v-for="(column, i) in field" :key="'column-' + i">
-                    <div v-for="(line, j) in column" :key="'line-' + j" class="cell border">
-                        <div v-if="line">
-                            <img 
-                                :src="pokemons[line.pokemonIndex].image"
-                                width="32"
-                                height="32"
-                            >
-                        </div>
+            <div class="row">
+
+                <div class="col-auto">
+                    <div class="field m-3">
+                        <div v-for="(column, i) in field" :key="'column-' + i">
+                            <div v-for="(line, j) in column" :key="'line-' + j" class="cell border">
+                                <div v-if="line">
+                                    <img 
+                                        :src="pokemons[line.pokemonIndex].image"
+                                        width="32"
+                                        height="32"
+                                    >
+                                </div>
+                            </div>
+                        </div>                
                     </div>
                 </div>
+
+                <div class="col mt-3">
+
+                    <h1 v-if="player.dead">Você morreu!</h1>
+                    
+                    <div class="row">
+                        <div 
+                            v-for="(pokemon, i) in pokemons" :key="'pokemon-' + i" 
+                            class="col px-0"
+                        >
+                            <button 
+                                type="button" 
+                                :disabled="!player.dead"
+                                @click="choosePokemon(i)"
+                            >
+                                <img :src="pokemon.image" style="width: 100%">
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
@@ -43,7 +70,7 @@
                     player: {
                         uuid: '',
                         name: '',
-                        dead: false
+                        dead: true
                     },
                     fieldSize: {
                         width: 32,
@@ -85,11 +112,12 @@
                             this.player.x = this.getRandom(0, this.fieldSize.width - 1);
                         }
 
-                        if (!this.player.x) {
+                        if (!this.player.y) {
                             this.player.y = this.getRandom(0, this.fieldSize.height - 1);
                         }
 
-                        this.player.pokemonIndex = 0;
+                        //this.player.pokemonIndex = 0;
+                        //this.player.dead = true;
 
                         console.log(this.player);
                         this.savePlayer();
@@ -185,6 +213,14 @@
                         value = Math.max(value, min);
                         value = Math.min(value, max);
                         return value;
+                    },
+
+                    choosePokemon(i) {
+                        this.player.pokemonIndex = i;
+                        this.player.dead = false;
+                        this.player.x = null;
+                        this.player.y = null;
+                        this.initPlayer();
                     }
                 }
             });
@@ -198,6 +234,10 @@
         .cell {
             width: 32px;
             height: 32px;
+        }
+
+        * {
+            overflow: hidden;
         }
     </style>
     </body>
