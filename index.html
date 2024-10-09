@@ -71,7 +71,7 @@
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-for="(player, i) in ranking">
+                          <tr v-for="(player, i) in ranking" :class="{ 'bg-secondary': player.dead }">
                             <td>{{player.name}}</td>
                             <td>{{player.score}}</td>
                           </tr>
