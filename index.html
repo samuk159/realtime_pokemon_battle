@@ -182,7 +182,7 @@
                         
                         if (index == -1) {
                             this.players.push(this.player);
-                            this.createFirebasePlayer();
+                            this.player.key = this.createFirebasePlayer();
                         } else {
                             if (!this.firebaseKey) {
                                 this.firebaseKey = this.players[index].key;
@@ -323,13 +323,10 @@
                         let result = push(playersRef, this.player);
                         let key = result.key;
                         this.firebaseKey = key;
+                        return key;
                     },
 
                     updateFirebasePlayer(key, player) {
-                        if (!key && player.uuid === this.player.uuid) {
-                            key = this.firebaseKey;
-                        }
-
                         if (!key) {
                             throw 'chave não informada';
                         }
