@@ -24,7 +24,12 @@
                 <div class="col-auto">
                     <div class="field m-3">
                         <div v-for="(column, i) in field" :key="'column-' + i">
-                            <div v-for="(line, j) in column" :key="'line-' + j" class="cell border">
+                            <div 
+                                v-for="(line, j) in column" 
+                                :key="'line-' + j" 
+                                class="cell border" 
+                                :class="{ 'bg-dark': line && line.uuid === player.uuid }"
+                            >
                                 <div v-if="line">
                                     <img 
                                         :src="pokemons[line.pokemonIndex].image"
