@@ -22,7 +22,7 @@
             <div class="row">
 
                 <div class="col-auto">
-                    <div class="field m-3">
+                    <div v-if="!player.dead" class="field m-3">
                         <div v-for="(column, i) in field" :key="'column-' + i">
                             <div 
                                 v-for="(line, j) in column" 
@@ -54,7 +54,7 @@
                             <button 
                                 type="button" 
                                 class="btn btn-outline-secondary"
-                                :disabled="!player.dead"
+                                :disabled="!isSelectable(i)"
                                 @click="choosePokemon(i)"
                                 style="width: 64px; height: 64px"
                             >
@@ -176,6 +176,8 @@
                     },
 
                     async savePlayer() {
+                        if (!this.player.name) return;
+
                         localStorage.setItem('player', JSON.stringify(this.player));
                         await this.findFirebasePlayers();
                         let index = this.players.findIndex(p => p.uuid === this.player.uuid);
@@ -226,19 +228,247 @@
                             {
                                 name: 'Bulbassauro',
                                 type: this.types.grass,
-                                image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/1.gif'
+                                image: '1'
                             },
                             {
                                 name: 'Charmander',
                                 type: this.types.fire,
-                                image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/4.gif'
+                                image: 4
                             },
                             {
                                 name: 'Squirtle',
                                 type: this.types.water,
-                                image: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/7.gif'
-                            }
+                                image: 7
+                            },
+
+                            {
+                                name: 'ivysaur',
+                                type: this.types.grass,
+                                image: 2
+                            },
+                            {
+                                name: 'charmeleon',
+                                type: this.types.fire,
+                                image: 5
+                            },
+                            {
+                                name: 'wartortle',
+                                type: this.types.water,
+                                image: 8
+                            },
+
+                            {
+                                name: 'venusaur',
+                                type: this.types.grass,
+                                image: 3
+                            },
+                            {
+                                name: 'charizard',
+                                type: this.types.fire,
+                                image: 6
+                            },
+                            {
+                                name: 'blastoise',
+                                type: this.types.water,
+                                image: 9
+                            },
+
+                            {
+                                name: 'Chikorita',
+                                type: this.types.grass,
+                                image: 152
+                            },
+                            {
+                                name: 'Cyndaquil',
+                                type: this.types.fire,
+                                image: 155
+                            },
+                            {
+                                name: 'Totodile',
+                                type: this.types.water,
+                                image: 158
+                            },
+
+                            {
+                                name: 'bayleef',
+                                type: this.types.grass,
+                                image: 153
+                            },
+                            {
+                                name: 'quilava',
+                                type: this.types.fire,
+                                image: 156
+                            },
+                            {
+                                name: 'croconaw',
+                                type: this.types.water,
+                                image: 159
+                            },
+
+                            {
+                                name: 'meganium',
+                                type: this.types.grass,
+                                image: 154
+                            },
+                            {
+                                name: 'typhlosion',
+                                type: this.types.fire,
+                                image: 157
+                            },
+                            {
+                                name: 'feraligatr',
+                                type: this.types.water,
+                                image: 160
+                            },
+
+                            {
+                                name: 'Treecko',
+                                type: this.types.grass,
+                                image: 252
+                            },
+                            {
+                                name: 'Torchic',
+                                type: this.types.fire,
+                                image: 255
+                            },
+                            {
+                                name: 'Mudkip',
+                                type: this.types.water,
+                                image: 258
+                            },
+
+                            {
+                                name: 'grovyle',
+                                type: this.types.grass,
+                                image: 253
+                            },
+                            {
+                                name: 'combusken',
+                                type: this.types.fire,
+                                image: 256
+                            },
+                            {
+                                name: 'marshtomp',
+                                type: this.types.water,
+                                image: 259
+                            },
+
+                            {
+                                name: 'sceptile',
+                                type: this.types.grass,
+                                image: 254
+                            },
+                            {
+                                name: 'blaziken',
+                                type: this.types.fire,
+                                image: 257
+                            },
+                            {
+                                name: 'swampert',
+                                type: this.types.water,
+                                image: 260
+                            },
+
+                            {
+                                name: 'Turtwig',
+                                type: this.types.grass,
+                                image: 387
+                            },
+                            {
+                                name: 'Chimchar',
+                                type: this.types.fire,
+                                image: 390
+                            },
+                            {
+                                name: 'Piplup',
+                                type: this.types.water,
+                                image: 393
+                            },
+
+                            {
+                                name: 'grotle',
+                                type: this.types.grass,
+                                image: 388
+                            },
+                            {
+                                name: 'monferno',
+                                type: this.types.fire,
+                                image: 391
+                            },
+                            {
+                                name: 'prinplup',
+                                type: this.types.water,
+                                image: 394
+                            },
+
+                            {
+                                name: 'torterra',
+                                type: this.types.grass,
+                                image: 389
+                            },
+                            {
+                                name: 'infernape',
+                                type: this.types.fire,
+                                image: 392
+                            },
+                            {
+                                name: 'empoleon',
+                                type: this.types.water,
+                                image: 395
+                            },
+
+                            {
+                                name: 'Snivy',
+                                type: this.types.grass,
+                                image: 495
+                            },
+                            {
+                                name: 'Tepig',
+                                type: this.types.fire,
+                                image: 498
+                            },
+                            {
+                                name: 'Oshawott',
+                                type: this.types.water,
+                                image: 501
+                            },
+
+                            {
+                                name: 'servine',
+                                type: this.types.grass,
+                                image: 496
+                            },
+                            {
+                                name: 'pignite',
+                                type: this.types.fire,
+                                image: 499
+                            },
+                            {
+                                name: 'dewott',
+                                type: this.types.water,
+                                image: 502
+                            },
+
+                            {
+                                name: 'serperior',
+                                type: this.types.grass,
+                                image: 497
+                            },
+                            {
+                                name: 'emboar',
+                                type: this.types.fire,
+                                image: 500
+                            },
+                            {
+                                name: 'samurott',
+                                type: this.types.water,
+                                image: 503
+                            },
                         ];
+
+                        this.pokemons.forEach(p => {
+                            p.image = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/' + p.image + '.gif'
+                        });
                     },
 
                     listenKeyboard() {
@@ -282,6 +512,8 @@
                     },
 
                     choosePokemon(i) {
+                        if (!this.player.name) return;
+
                         this.player.pokemonIndex = i;
                         this.player.dead = false;
                         this.player.x = null;
@@ -338,6 +570,8 @@
 
                     listenFirebasePlayersChange() {
                         onValue(playersRef, (snapshot) => {
+                            if (this.player.dead) return;
+
                             let key = snapshot.key;
                             let value = snapshot.val();
                             this.updatePlayersFromFirebase(value);
@@ -384,6 +618,10 @@
                         }
 
                         return kill;
+                    },
+
+                    isSelectable(i) {
+                        return !this.players.find(p => !p.dead && p.pokemonIndex === i);
                     }
                 }
             });
