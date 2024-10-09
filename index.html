@@ -42,11 +42,11 @@
                     </div>
                 </div>
 
-                <div class="col mt-3">
+                <div class="col mt-3 pl-0 pr-5">
 
                     <h1 v-if="player.dead">Você morreu!</h1>
                     
-                    <div v-if="player.dead" class="row justify-content-start">
+                    <div v-if="player.dead" class="row justify-content-start mx-0 mb-3">
                         <div 
                             v-for="(pokemon, i) in pokemons" :key="'pokemon-' + i" 
                             class="col-auto px-0"
@@ -62,6 +62,21 @@
                             </button>
                         </div>
                     </div>
+
+                    <table border="1" class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                          <tr>
+                            <th>Nome</th>
+                            <th>Pontos</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr v-for="(player, i) in ranking">
+                            <td>{{player.name}}</td>
+                            <td>{{player.score}}</td>
+                          </tr>
+                        </tbody>
+                    </table>
 
                 </div>
 
@@ -99,7 +114,8 @@
                     player: {
                         uuid: '',
                         name: '',
-                        dead: true
+                        dead: true,
+                        score: 1
                     },
                     fieldSize: {
                         width: 32,
@@ -123,6 +139,12 @@
                     this.initPlayer();
                     this.listenKeyboard();
                     this.listenFirebasePlayersChange();
+                },
+
+                computed: {
+                    ranking() {
+                        return this.players.sort((a, b) => (b.score || 0) - (a.score || 0));
+                    }
                 },
 
                 methods: {
@@ -316,23 +338,8 @@
                         let target = this.field[this.player.x][this.player.y];
 
                         if (target) {
-                            let killTarget = this.checkKill(this.player, target);
-
-                            if (killTarget) {
-                                target.dead = true;
-                                this.$nextTick(() => {
-                                    this.updateFirebasePlayer(target.key, target);
-                                });
-                            } else {
-                                let killPlayer = this.checkKill(target, this.player);
-
-                                if (killPlayer) {
-                                    this.player.dead = true;
-                                    this.$nextTick(() => {
-                                        this.updateFirebasePlayer(this.firebaseKey, this.player);
-                                    });
-                                }
-                            }
+                            this.checkKill(this.player, target);
+                            this.checkKill(target, this.player);
                         }
                     },
 
@@ -340,11 +347,31 @@
                         let t1 = this.pokemons[p1.pokemonIndex].type;
                         let t2 = this.pokemons[p2.pokemonIndex].type;
 
-                        return (
+                        let kill = (
                             (t1 === this.types.fire && t2 === this.types.grass)
                             || (t1 === this.types.grass && t2 === this.types.water)
                             || (t1 === this.types.water && t2 === this.types.fire)
                         );
+
+                        if (kill) {
+                            p2.dead = true;
+
+                            this.$nextTick(() => {
+                                this.updateFirebasePlayer(p2.key, p2);
+
+                                if (!p1.score) {
+                                    p1.score = 0;
+                                }
+
+                                p1.score++;
+
+                                this.$nextTick(() => {
+                                    this.updateFirebasePlayer(p1.key, p1);
+                                });
+                            });
+                        }
+
+                        return kill;
                     }
                 }
             });
