@@ -220,7 +220,7 @@
                     listenKeyboard() {
                         document.addEventListener('keyup', (event) => {
                             if (this.player.dead) return;
-                            debugger;
+                            
                             switch(event.key) {
                                 case 'ArrowUp':
                                     this.player.y--;
@@ -239,11 +239,8 @@
                             this.player.x = this.clamp(this.player.x, 0, this.fieldSize.width - 1);
                             this.player.y = this.clamp(this.player.y, 0, this.fieldSize.height - 1);
 
-                            let saved = this.checkCollision();
-
-                            if (!saved) {
-                                this.savePlayer();
-                            }
+                            this.savePlayer();
+                            this.checkCollision();
                         });
                     },
 
@@ -304,7 +301,7 @@
                     },
 
                     listenFirebasePlayersChange() {
-                        onValue(playersRef, (snapshot) => { debugger;
+                        onValue(playersRef, (snapshot) => {
                             let key = snapshot.key;
                             let value = snapshot.val();
                             this.updatePlayersFromFirebase(value);
@@ -321,14 +318,17 @@
 
                             if (killTarget) {
                                 target.dead = true;
-                                this.updateFirebasePlayer(target.key, target);
+                                this.$nextTick(() => {
+                                    this.updateFirebasePlayer(target.key, target);
+                                });
                             } else {
                                 let killPlayer = this.checkKill(target, this.player);
 
                                 if (killPlayer) {
                                     this.player.dead = true;
-                                    this.updateFirebasePlayer(this.firebaseKey, this.player);
-                                    return true;
+                                    this.$nextTick(() => {
+                                        this.updateFirebasePlayer(this.firebaseKey, this.player);
+                                    });
                                 }
                             }
                         }
