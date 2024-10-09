@@ -67,7 +67,7 @@
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
             // TODO: Add SDKs for Firebase products that you want to use
             // https://firebase.google.com/docs/web/setup#available-libraries
-            import { getDatabase, ref, get, push } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js'
+            import { getDatabase, ref, get, push, update, onValue } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js'
 
             // Your web app's Firebase configuration
             const firebaseConfig = {
@@ -115,6 +115,7 @@
                     this.loadPlayer();
                     this.initPlayer();
                     this.listenKeyboard();
+                    this.listenFirebasePlayersChange();
                 },
 
                 methods: {
@@ -150,16 +151,18 @@
                         localStorage.setItem('player', JSON.stringify(this.player));
                         await this.findFirebasePlayers();
                         let index = this.players.findIndex(p => p.uuid === this.player.uuid);
-                        debugger;
+                        
                         if (index == -1) {
                             this.players.push(this.player);
                             this.createFirebasePlayer();
                         } else {
-                            this.players[index] = this.player;
-
                             if (!this.firebaseKey) {
                                 this.firebaseKey = this.players[index].key;
+                                console.log(this.firebaseKey);
                             }
+
+                            this.players[index] = this.player;
+                            this.updateFirebasePlayer();
                         }
 
                         this.refreshField();
@@ -252,40 +255,60 @@
                         this.initPlayer();
                     },
 
-                    async findFirebasePlayers() { debugger;
+                    async findFirebasePlayers() {
                         if (this.players.length) return;
 
-                        let snapshot = await get(playersRef).catch((error) => {  debugger;
+                        let snapshot = await get(playersRef).catch((error) => {
                             console.error(error);
                         });
                         console.log(snapshot);
-                        debugger;
+                        
                         if (snapshot && snapshot.exists()) {
-                            let obj = snapshot.val();
-                            console.log(obj);
+                            let value = snapshot.val();
+                            console.log(value);
+                            this.updatePlayersFromFirebase(value);
                         }
-                        // .then((snapshot) => {                            
-                        //     if (snapshot.exists()) {
-                        //         //this.matches = []; 
-                        //         let obj = snapshot.val();
-                        //         console.log(obj);
-                                
-                        //         /*for (let key in obj) {
-                        //             this.matches.push({
-                        //                 key: key,
-                        //                 value: obj[key]
-                        //             });
-                        //         }*/
-                        //     }
-                        // })
                     },
 
-                    createFirebasePlayer() { debugger;
+                    updatePlayersFromFirebase(value) {
+                        this.players = [];
+
+                        for (let key in value) {
+                            this.players.push({
+                                key,
+                                ...value[key]
+                            });
+                        }  
+                        
+                        console.log(this.players);
+                        this.refreshField();
+                    },
+
+                    createFirebasePlayer() {
                         let result = push(playersRef, this.player);
                         console.log(result);
                         let key = result.key;
                         console.log(key);
                         this.firebaseKey = key;
+                        console.log(this.firebaseKey);
+                    },
+
+                    updateFirebasePlayer() {
+                        let updates = {};
+                        updates[this.firebaseKey] = this.player;
+                        console.log(updates);
+                        update(playersRef, updates);
+                    },
+
+                    listenFirebasePlayersChange() {
+                        onValue(playersRef, (snapshot) => {
+                            console.log(snapshot);
+                            let key = snapshot.key;
+                            let value = snapshot.val();
+                            console.log(key);
+                            console.log(value);
+                            this.updatePlayersFromFirebase(value);
+                        });
                     }
                 }
             });
