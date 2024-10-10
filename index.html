@@ -71,12 +71,22 @@
                     <table border="1" class="table table-bordered table-striped">
                         <thead class="table-dark">
                           <tr>
+                            <th>Pokemon</th>
                             <th>Nome</th>
                             <th>Pontos</th>
                           </tr>
                         </thead>
                         <tbody>
                           <tr v-for="(player, i) in ranking" :class="{ 'bg-secondary': player.dead }">
+                            <td>
+                                <div v-if="!player.dead">
+                                    <img 
+                                        :src="pokemons[player.pokemonIndex].image" 
+                                        :title="pokemons[player.pokemonIndex].name" 
+                                        style="width: 24px; height: 24x"
+                                    >
+                                </div>
+                            </td>
                             <td>{{player.name}}</td>
                             <td>{{player.score}}</td>
                           </tr>
