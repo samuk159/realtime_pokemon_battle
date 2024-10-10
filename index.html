@@ -129,7 +129,10 @@
                         water: 2
                     },
                     pokemons: [],
-                    firebaseKey: null
+                    firebaseKey: null,
+                    backgroundMusicSound: null,
+                    soundEffectNames: ['die', 'hit', 'spawn'],
+                    sounds: [],
                 },
 
                 mounted() {
@@ -139,6 +142,7 @@
                     this.initPlayer();
                     this.listenKeyboard();
                     this.listenFirebasePlayersChange();
+                    this.setSounds();
                 },
 
                 computed: {
@@ -473,6 +477,7 @@
 
                     listenKeyboard() {
                         document.addEventListener('keyup', (event) => {
+                            this.setBackgroundMusicSound();
                             if (this.player.dead) return;
                             let moved = false;
                             
@@ -518,6 +523,7 @@
                         this.player.dead = false;
                         this.player.x = null;
                         this.player.y = null;
+                        this.playSound('spawn');
                         this.initPlayer();
                     },
 
@@ -544,6 +550,10 @@
                             });
 
                             if (value[key].uuid === this.player.uuid) {
+                                if (!this.player.dead && value[key].dead) {
+                                    this.playSound('die');
+                                }
+
                                 this.player = value[key];
                             }
                         }  
@@ -560,7 +570,11 @@
 
                     updateFirebasePlayer(key, player) {
                         if (!key) {
-                            throw 'chave não informada';
+                            throw 'Chave não informada';
+                        }
+
+                        if (!player.name) {
+                            return;
                         }
 
                         let updates = {};
@@ -584,8 +598,12 @@
                         let target = this.field[this.player.x][this.player.y];
 
                         if (target) {
-                            this.checkKill(this.player, target);
+                            let playerKilledTarget = this.checkKill(this.player, target);
                             this.checkKill(target, this.player);
+
+                            if (playerKilledTarget) {
+                                this.playSound('hit');
+                            }
                         }
                     },
 
@@ -622,7 +640,63 @@
 
                     isSelectable(i) {
                         return !this.players.find(p => !p.dead && p.pokemonIndex === i);
-                    }
+                    },
+
+                    setSounds() {
+                        this.soundEffectNames.forEach(soundName => {
+                            let sound = document.createElement("audio");
+                            sound.name = soundName;
+                            sound.src = 'audio/' + sound.name + '.mp3';
+                            sound.setAttribute("preload", "auto");
+                            sound.setAttribute("controls", "none");
+                            sound.style.display = "none";
+
+                            this.sounds.push(sound);
+                        });
+                    },
+
+                    setBackgroundMusicSound() {
+                        // if (!this.backgroundMusicSound) {
+                        //     let sound = document.createElement("audio");
+                        //     sound.name = 'music';
+                        //     sound.src = 'audio/music.mp3';
+                        //     sound.setAttribute("preload", "auto");
+                        //     sound.setAttribute("controls", "none");
+                        //     sound.style.display = "none";
+                        //     sound.onended = () => {
+                        //         this.backgroundMusicSound.play();
+                        //     };
+
+                        //     this.backgroundMusicSound = sound;
+                        //     this.backgroundMusicSound.play();
+                        // }
+                    },
+
+                    playSound(name) {
+                        let sound = this.sounds.find(s => s.name === name);
+
+                        if (sound && sound.paused) {
+                            sound.play();
+                        }
+
+                        if (this.backgroundMusicSound) {
+                            this.backgroundMusicSound.volume = 0.1;
+                            this.increaseBackgroundMusicSoundVolume();
+                        }
+                    },
+
+                    increaseBackgroundMusicSoundVolume() {
+                        // this.backgroundMusicSound.volume = Math.min(
+                        //     this.backgroundMusicSound.volume + 0.1,
+                        //     1
+                        // );
+
+                        // if (this.backgroundMusicSound.volume < 1) {
+                        //     setTimeout(() => {
+                        //         this.increaseBackgroundMusicSoundVolume();
+                        //     }, 500);
+                        // }
+                    },
                 }
             });
         </script>
