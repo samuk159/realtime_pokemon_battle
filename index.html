@@ -555,20 +555,28 @@
                     },
 
                     updatePlayersFromFirebase(value) {
-                        this.players = [];
-
                         for (let key in value) {
-                            this.players.push({
-                                key,
-                                ...value[key]
-                            });
+                            let newPlayer = value[key];
+                            newPlayer.key = key;
 
-                            if (value[key].uuid === this.player.uuid) {
-                                if (value[key].score > this.player.score) {
-                                    this.playSound('hit');
+                            let index = this.players.findIndex(p => p.uuid === newPlayer.uuid);
+
+                            if (index == -1) {
+                                this.players.push(newPlayer);
+                            } else {
+                                let currentPlayer = this.players[index];
+
+                                if (!currentPlayer.updatedAt || newPlayer.updatedAt > currentPlayer.updatedAt) {
+                                    this.players[index] = newPlayer;
+
+                                    if (newPlayer.uuid === this.player.uuid) {
+                                        if (newPlayer.score > this.player.score) {
+                                            this.playSound('hit');
+                                        }
+
+                                        this.player = newPlayer;
+                                    }
                                 }
-
-                                this.player = value[key];
                             }
                         }  
 
@@ -577,6 +585,7 @@
                     },
 
                     createFirebasePlayer() {
+                        this.player.updatedAt = new Date().getTime();
                         let result = push(playersRef, this.player);
                         let key = result.key;
                         this.firebaseKey = key;
@@ -592,6 +601,7 @@
                             return;
                         }
 
+                        player.updatedAt = new Date().getTime();
                         let updates = {};
                         updates[key] = player;
                         update(playersRef, updates);
