@@ -137,8 +137,7 @@
                     firebaseKey: null,
                     backgroundMusicSound: null,
                     soundEffectNames: ['die', 'hit', 'spawn'],
-                    sounds: [],
-                    nextMove: null
+                    sounds: []
                 },
 
                 mounted() {
@@ -149,15 +148,6 @@
                     this.listenKeyboard();
                     this.listenFirebasePlayersChange();
                     this.setSounds();
-
-                    setInterval(() => {
-                        if (this.nextMove) {
-                            this.move({
-                                key: this.nextMove
-                            });
-                            this.nextMove = null;
-                        }
-                    }, 500);
                 },
 
                 computed: {
@@ -233,7 +223,11 @@
 
                         for (let p of this.players) {
                             if (!p.dead) {
-                                this.field[p.x][p.y] = p;
+                                let current = this.field[p.x][p.y];
+
+                                if (!current || p.uuid === this.player.uuid) {
+                                    this.field[p.x][p.y] = p;
+                                }
                             }
                         }
                     },
@@ -491,7 +485,7 @@
                     },
 
                     listenKeyboard() {
-                        document.addEventListener('keyup', event => this.nextMove = event.key);
+                        document.addEventListener('keyup', event => this.move(event));
                     },
 
                     move(event) {
@@ -526,7 +520,7 @@
 
                         if (moved) {
                             this.savePlayer();
-                            this.checkCollision();
+                            //this.checkCollision();
                         }
                     },
 
@@ -577,7 +571,8 @@
                                 this.player = value[key];
                             }
                         }  
-                        
+
+                        this.checkKilled();                        
                         this.refreshField();
                     },
 
@@ -612,20 +607,20 @@
                         });
                     },
 
-                    checkCollision() {
-                        if (!this.field.length) return;
+                    // checkCollision() {
+                    //     if (!this.field.length) return;
 
-                        let target = this.field[this.player.x][this.player.y];
+                    //     let target = this.field[this.player.x][this.player.y];
 
-                        if (target) {
-                            let playerKilledTarget = this.checkKill(this.player, target);
-                            this.checkKill(target, this.player);
+                    //     if (target) {
+                    //         //let playerKilledTarget = this.checkKill(this.player, target);
+                    //         this.checkKill(target, this.player);
 
-                            if (playerKilledTarget) {
-                                this.playSound('hit');
-                            }
-                        }
-                    },
+                    //         // if (playerKilledTarget) {
+                    //         //     this.playSound('hit');
+                    //         // }
+                    //     }
+                    // },
 
                     checkKill(p1, p2) {
                         let t1 = this.pokemons[p1.pokemonIndex].type;
@@ -637,23 +632,23 @@
                             || (t1 === this.types.water && t2 === this.types.fire)
                         );
 
-                        if (kill) {
-                            p2.dead = true;
+                        // if (kill) {
+                        //     p2.dead = true;
 
-                            this.$nextTick(() => {
-                                this.updateFirebasePlayer(p2.key, p2);
+                        //     this.$nextTick(() => {
+                        //         this.updateFirebasePlayer(p2.key, p2);
 
-                                if (!p1.score) {
-                                    p1.score = 0;
-                                }
+                        //         if (!p1.score) {
+                        //             p1.score = 0;
+                        //         }
 
-                                p1.score++;
+                        //         p1.score++;
 
-                                this.$nextTick(() => {
-                                    this.updateFirebasePlayer(p1.key, p1);
-                                });
-                            });
-                        }
+                        //         this.$nextTick(() => {
+                        //             this.updateFirebasePlayer(p1.key, p1);
+                        //         });
+                        //     });
+                        // }
 
                         return kill;
                     },
@@ -730,6 +725,43 @@
                         }
 
                         this.updateFirebasePlayer(this.firebaseKey, this.player);
+                    },
+
+                    checkKilled() {
+                        let playersInSamePosition = this.players.filter(p => {
+                            return !p.dead && 
+                                p.uuid !== this.player.uuid &&
+                                p.x === this.player.x &&
+                                p.y === this.player.y
+                        });
+
+                        for (let enemy of playersInSamePosition) {
+                            let killed = this.checkKill(enemy, this.player);
+
+                            if (killed) {
+                                this.player.dead = true;
+                                
+                                let index = this.players.findIndex(p => p.uuid === this.player.uuid);
+                                if (index > -1) {
+                                    this.players[index] = this.player;
+                                }
+
+                                this.$nextTick(() => {
+                                    this.updateFirebasePlayer(this.player.key, this.player);
+
+                                    if (!enemy.score) {
+                                        enemy.score = 0;
+                                    }
+
+                                    enemy.score++;
+
+                                    this.$nextTick(() => {
+                                        this.updateFirebasePlayer(enemy.key, enemy);
+                                    });
+                                });
+                                break;
+                            }
+                        }
                     }
                 }
             });
