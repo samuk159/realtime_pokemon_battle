@@ -138,6 +138,7 @@
                     backgroundMusicSound: null,
                     soundEffectNames: ['die', 'hit', 'spawn'],
                     sounds: [],
+                    killedTargets: []
                 },
 
                 mounted() {
@@ -481,41 +482,44 @@
                     },
 
                     listenKeyboard() {
-                        document.addEventListener('keyup', (event) => {
-                            this.setBackgroundMusicSound();
-                            if (this.player.dead) return;
-                            let moved = false;
-                            
-                            switch(event.key) {
-                                case 'ArrowUp':
-                                    this.player.y--;
-                                    moved = true;
-                                    break;
-                                case 'ArrowDown':
-                                    this.player.y++;
-                                    moved = true;
-                                    break;
-                                case 'ArrowLeft':
-                                    this.player.x--;
-                                    moved = true;
-                                    break;
-                                case 'ArrowRight':
-                                    this.player.x++;
-                                    moved = true;
-                                    break;
-                                case 'Escape':
-                                    this.giveUp();
-                                    return;
-                            }
-                            
-                            this.player.x = this.clamp(this.player.x, 0, this.fieldSize.width - 1);
-                            this.player.y = this.clamp(this.player.y, 0, this.fieldSize.height - 1);
+                        document.addEventListener('keyup', event => this.move(event));
+                    },
 
-                            if (moved) {
-                                this.savePlayer();
-                                this.checkCollision();
-                            }
-                        });
+                    move(event) {
+                        this.setBackgroundMusicSound();
+                        if (this.player.dead) return;
+                        let moved = false;
+                        
+                        switch(event.key) {
+                            case 'ArrowUp':
+                                this.player.y--;
+                                moved = true;
+                                break;
+                            case 'ArrowDown':
+                                this.player.y++;
+                                moved = true;
+                                break;
+                            case 'ArrowLeft':
+                                this.player.x--;
+                                moved = true;
+                                break;
+                            case 'ArrowRight':
+                                this.player.x++;
+                                moved = true;
+                                break;
+                            case 'Escape':
+                                this.giveUp();
+                                return;
+                        }
+                        
+                        this.player.x = this.clamp(this.player.x, 0, this.fieldSize.width - 1);
+                        this.player.y = this.clamp(this.player.y, 0, this.fieldSize.height - 1);
+                        this.verifyKilledTargets();
+
+                        if (moved) {
+                            this.savePlayer();
+                            this.checkCollision();
+                        }
                     },
 
                     clamp(value, min, max) {
@@ -611,6 +615,10 @@
 
                             if (playerKilledTarget) {
                                 this.playSound('hit');
+
+                                if (!this.killedTargets.includes(target.uuid)) {
+                                    this.killedTargets.push(target.uuid);
+                                }
                             }
                         }
                     },
@@ -718,6 +726,19 @@
                         }
 
                         this.updateFirebasePlayer(this.firebaseKey, this.player);
+                    },
+
+                    verifyKilledTargets() {
+                        for (let target of this.killedTargets) {
+                            let player = this.players.find(p => p.uuid === target);
+
+                            if (player && !player.dead) {
+                                player.dead = true;
+                                this.updateFirebasePlayer(player.key, player);
+                            }
+                        }
+
+                        this.killedTargets = [];
                     }
                 }
             });
