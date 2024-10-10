@@ -53,7 +53,12 @@
                         >
                             <button 
                                 type="button" 
-                                class="btn btn-outline-secondary"
+                                class="btn"
+                                :class="{ 
+                                    'btn-outline-success': pokemon.type === types.grass,
+                                    'btn-outline-danger': pokemon.type === types.fire,
+                                    'btn-outline-primary': pokemon.type === types.water
+                                }"
                                 :disabled="!isSelectable(i)"
                                 @click="choosePokemon(i)"
                                 style="width: 64px; height: 64px"
