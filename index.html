@@ -503,6 +503,9 @@
                                     this.player.x++;
                                     moved = true;
                                     break;
+                                case 'Escape':
+                                    this.giveUp();
+                                    return;
                             }
                             
                             this.player.x = this.clamp(this.player.x, 0, this.fieldSize.width - 1);
@@ -702,6 +705,20 @@
                         //     }, 500);
                         // }
                     },
+
+                    giveUp() {
+                        this.player.score--;
+                        this.player.dead = true;
+                        this.playSound('die');
+
+                        let index = this.players.findIndex(p => p.uuid === this.player.uuid);
+
+                        if (index > -1) {
+                            this.players[index] = this.player;
+                        }
+
+                        this.updateFirebasePlayer(this.firebaseKey, this.player);
+                    }
                 }
             });
         </script>
