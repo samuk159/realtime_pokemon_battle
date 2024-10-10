@@ -564,8 +564,8 @@
                             });
 
                             if (value[key].uuid === this.player.uuid) {
-                                if (!this.player.dead && value[key].dead) {
-                                    this.playSound('die');
+                                if (value[key].score > this.player.score) {
+                                    this.playSound('hit');
                                 }
 
                                 this.player = value[key];
@@ -740,6 +740,7 @@
 
                             if (killed) {
                                 this.player.dead = true;
+                                this.playSound('die');
                                 
                                 let index = this.players.findIndex(p => p.uuid === this.player.uuid);
                                 if (index > -1) {
