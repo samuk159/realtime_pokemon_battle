@@ -15,7 +15,7 @@
                 </div>
                 <div class="col">
                     <label>Nome:</label>
-                    <input type="text" class="form-control" v-model="player.name" @input="savePlayer()">
+                    <input type="text" class="form-control" v-model="player.name" @input="savePlayer({ name: player.name })">
                 </div>
             </div>
 
@@ -94,8 +94,9 @@
             import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
             // TODO: Add SDKs for Firebase products that you want to use
             // https://firebase.google.com/docs/web/setup#available-libraries
-            import { getDatabase, ref, get, push, update, onValue } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js'
-
+            import { getDatabase, ref, get, push, update, onChildChanged } from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js'
+            import * as teste2 from 'https://www.gstatic.com/firebasejs/10.14.0/firebase-database.js'
+            console.log(teste2);
             // Your web app's Firebase configuration
             const firebaseConfig = {
                 apiKey: "AIzaSyBv4W8Zxf9lSamAlBxC1VC3Iz7_84bJrrw",
@@ -181,10 +182,10 @@
                         //this.player.pokemonIndex = 0;
                         //this.player.dead = true;
 
-                        this.savePlayer();
+                        this.savePlayer(this.player);
                     },
 
-                    async savePlayer() {
+                    async savePlayer(updates) {
                         if (!this.player.name) return;
 
                         localStorage.setItem('player', JSON.stringify(this.player));
@@ -200,7 +201,7 @@
                             }
 
                             this.players[index] = this.player;
-                            this.updateFirebasePlayer(this.firebaseKey, this.player);
+                            this.updateFirebasePlayer(this.firebaseKey, updates);
                         }
 
                         this.refreshField();
@@ -512,7 +513,10 @@
                             this.player.y = this.clamp(this.player.y, 0, this.fieldSize.height - 1);
 
                             if (moved) {
-                                this.savePlayer();
+                                this.savePlayer({
+                                    x: this.player.x,
+                                    y: this.player.y
+                                });
                                 this.checkCollision();
                             }
                         });
@@ -585,18 +589,30 @@
                             return;
                         }
 
-                        let updates = {};
-                        updates[key] = player;
-                        update(playersRef, updates);
+                        let playerRef = ref(db, '/players/' + key);                        
+                        update(playerRef, player);
                     },
 
                     listenFirebasePlayersChange() {
-                        onValue(playersRef, (snapshot) => {
-                            if (this.player.dead) return;
+                        // playersRef.on('child_changed', (snapshot) => { debugger;
+                        //     if (this.player.dead) return;
 
-                            let key = snapshot.key;
-                            let value = snapshot.val();
-                            this.updatePlayersFromFirebase(value);
+                        //     let key = snapshot.key;
+                        //     console.log(key);
+                        //     let value = snapshot.val();
+                        //     console.log(value);
+                        //     this.updatePlayersFromFirebase(value);
+                        // });
+
+                        // onChildChanged(ref(db, '/players/-O8lo4u0YGTF0aWL4Miu'), (teste) => {
+                        //     console.log(teste);
+                        // });
+                        console.log(playersRef);
+                        playersRef.on('child_added', (snapshot, prevChildKey) => { debugger;
+                            const newPost = snapshot.val();
+                            console.log('Author: ' + newPost.author);
+                            console.log('Title: ' + newPost.title);
+                            console.log('Previous Post ID: ' + prevChildKey);
                         });
                     },
 
@@ -629,7 +645,9 @@
                             p2.dead = true;
 
                             this.$nextTick(() => {
-                                this.updateFirebasePlayer(p2.key, p2);
+                                this.updateFirebasePlayer(p2.key, {
+                                    dead: p2.dead
+                                });
 
                                 if (!p1.score) {
                                     p1.score = 0;
@@ -638,7 +656,9 @@
                                 p1.score++;
 
                                 this.$nextTick(() => {
-                                    this.updateFirebasePlayer(p1.key, p1);
+                                    this.updateFirebasePlayer(p1.key, {
+                                        score: p1.score
+                                    });
                                 });
                             });
                         }
@@ -717,7 +737,10 @@
                             this.players[index] = this.player;
                         }
 
-                        this.updateFirebasePlayer(this.firebaseKey, this.player);
+                        this.updateFirebasePlayer(this.firebaseKey, {
+                            score: this.player.score, 
+                            dead: this.player.dead
+                        });
                     }
                 }
             });
