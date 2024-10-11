@@ -197,8 +197,8 @@
                     async savePlayer() {
                         if (!this.player.name) return;
                         
-                        localStorage.setItem('player', JSON.stringify(this.player));
                         await this.findFirebasePlayers();
+                        localStorage.setItem('player', JSON.stringify(this.player));
                         let index = this.players.findIndex(p => p.uuid === this.player.uuid);
                         
                         if (index == -1) {
@@ -210,7 +210,6 @@
                             }
 
                             this.players[index] = this.player;
-                            localStorage.setItem('player', JSON.stringify(this.player));
                             this.updateFirebasePlayer(this.firebaseKey, this.player);
                         }
 
@@ -585,6 +584,7 @@
                                             this.playSound('hit');
                                         }
 
+                                        localStorage.setItem('player', JSON.stringify(this.player));
                                         this.player = newPlayer;
                                     }
                                 }
