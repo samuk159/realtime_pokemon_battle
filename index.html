@@ -30,7 +30,7 @@
                                 class="cell border" 
                                 :class="{ 'bg-dark': line && line.uuid === player.uuid }"
                             >
-                                <div v-if="line">
+                                <div v-if="line && line.pokemonIndex !== undefined">
                                     <img 
                                         :src="pokemons[line.pokemonIndex].image"
                                         width="32"
@@ -79,7 +79,7 @@
                         <tbody>
                           <tr v-for="(player, i) in ranking" :class="{ 'bg-secondary': player.dead }">
                             <td>
-                                <div v-if="!player.dead">
+                                <div v-if="!player.dead && player.pokemonIndex !== undefined">
                                     <img 
                                         :src="pokemons[player.pokemonIndex].image" 
                                         :title="pokemons[player.pokemonIndex].name" 
@@ -196,7 +196,7 @@
 
                     async savePlayer() {
                         if (!this.player.name) return;
-
+                        
                         localStorage.setItem('player', JSON.stringify(this.player));
                         await this.findFirebasePlayers();
                         let index = this.players.findIndex(p => p.uuid === this.player.uuid);
@@ -210,6 +210,7 @@
                             }
 
                             this.players[index] = this.player;
+                            localStorage.setItem('player', JSON.stringify(this.player));
                             this.updateFirebasePlayer(this.firebaseKey, this.player);
                         }
 
@@ -619,8 +620,6 @@
 
                     listenFirebasePlayersChange() {
                         onValue(playersRef, (snapshot) => {
-                            if (this.player.dead) return;
-
                             let key = snapshot.key;
                             let value = snapshot.val();
                             this.updatePlayersFromFirebase(value);
@@ -748,6 +747,8 @@
                     },
 
                     checkKilled() {
+                        if (this.player.dead) return;
+
                         let playersInSamePosition = this.players.filter(p => {
                             return !p.dead && 
                                 p.uuid !== this.player.uuid &&
@@ -769,12 +770,14 @@
 
                                 this.updateFirebasePlayer(this.player.key, this.player);
 
-                                if (!enemy.score) {
-                                    enemy.score = 0;
-                                }
+                                setTimeout(() => {
+                                    if (!enemy.score) {
+                                        enemy.score = 0;
+                                    }
 
-                                enemy.score++;
-                                this.updateFirebasePlayer(enemy.key, enemy);
+                                    enemy.score++;
+                                    this.updateFirebasePlayer(enemy.key, enemy);
+                                }, 100);
                                 break;
                             }
                         }
