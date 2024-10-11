@@ -767,19 +767,14 @@
                                     this.players[index] = this.player;
                                 }
 
-                                this.$nextTick(() => {
-                                    this.updateFirebasePlayer(this.player.key, this.player);
+                                this.updateFirebasePlayer(this.player.key, this.player);
 
-                                    if (!enemy.score) {
-                                        enemy.score = 0;
-                                    }
+                                if (!enemy.score) {
+                                    enemy.score = 0;
+                                }
 
-                                    enemy.score++;
-
-                                    this.$nextTick(() => {
-                                        this.updateFirebasePlayer(enemy.key, enemy);
-                                    });
-                                });
+                                enemy.score++;
+                                this.updateFirebasePlayer(enemy.key, enemy);
                                 break;
                             }
                         }
